@@ -39,14 +39,8 @@ android {
 
 dependencies {
     val mapsComposeVersion = "4.4.1"
-
-    // Google Maps Compose
     implementation("com.google.maps.android:maps-compose:$mapsComposeVersion")
-
-    // Utilidades de Google Maps para Jetpack Compose
     implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
-
-    // Widgets de Google Maps Compose
     implementation("com.google.maps.android:maps-compose-widgets:$mapsComposeVersion")
 
     implementation(platform(libs.androidx.compose.bom))
