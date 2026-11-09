@@ -13,7 +13,7 @@
         android:theme="@style/Theme.Lab12_Maps">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${AIzaSyBlW49Us-WiT68Sd5vh5ryZLrE9iPYWwms}" />
+            android:value="${MAPS_API_KEY}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
