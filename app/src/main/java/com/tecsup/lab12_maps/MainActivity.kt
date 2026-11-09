@@ -16,16 +16,8 @@ import com.tecsup.lab12_maps.ui.theme.Lab12_MapsTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            Lab12_MapsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            MapScreen()
         }
     }
 }
@@ -45,3 +37,4 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+
