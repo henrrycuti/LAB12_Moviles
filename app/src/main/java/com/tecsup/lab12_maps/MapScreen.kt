@@ -35,6 +35,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.maps.android.compose.MapUiSettings
+import kotlinx.coroutines.launch
+
+@SuppressLint("MissingPermission")
 @Composable
 fun MapScreen() {
     val ArequipaLocation = LatLng(-16.4040102, -71.559611) // Arequipa, Perú
@@ -69,6 +84,57 @@ fun MapScreen() {
         position = CameraPosition.fromLatLngZoom(ArequipaLocation, 12f)
     }
 
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val fusedClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    var tienePermiso by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permisos ->
+        tienePermiso = permisos[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permisos[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+    }
+
+// Pedir permiso al abrir
+    LaunchedEffect(Unit) {
+        if (!tienePermiso) {
+            launcher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
+// Con permiso, obtener la posición y centrar la cámara
+    LaunchedEffect(tienePermiso) {
+        if (tienePermiso) {
+            fusedClient.getCurrentLocation(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                CancellationTokenSource().token
+            ).addOnSuccessListener { loc ->
+                if (loc != null) {
+                    scope.launch {
+                        cameraPositionState.animate(
+                            update = CameraUpdateFactory.newLatLngZoom(
+                                LatLng(loc.latitude, loc.longitude), 16f
+                            ),
+                            durationMs = 2000
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         delay(1500)
         val bounds = LatLngBounds.builder().apply {
@@ -93,7 +159,8 @@ fun MapScreen() {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            properties = MapProperties(mapType = mapType)
+            properties = MapProperties(mapType = mapType, isMyLocationEnabled = tienePermiso),
+            uiSettings = MapUiSettings(myLocationButtonEnabled = true)
         ) {
             Marker(
                 state = rememberMarkerState(position = ArequipaLocation),
