@@ -17,7 +17,9 @@ import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.delay
-
+import com.google.android.gms.maps.model.Dash
+import com.google.android.gms.maps.model.Gap
+import com.google.maps.android.compose.Polyline
 @Composable
 fun MapScreen() {
     val ArequipaLocation = LatLng(-16.4040102, -71.559611) // Arequipa, Perú
@@ -101,6 +103,26 @@ fun MapScreen() {
                 fillColor = Color.Blue,
                 strokeWidth = 5f
             )
+
+            // Ejemplo 1: ruta continua Plaza de Armas -> Parque Lambramani -> Mall Aventura
+            Polyline(
+                points = listOf(
+                    plazaDeArmasPolygon.first(),
+                    parqueLambramaniPolygon.first(),
+                    mallAventuraPolygon.first()
+                ),
+                color = Color.Magenta,
+                width = 10f
+            )
+
+// Ejemplo 2: ruta punteada entre los puntos de interés
+            Polyline(
+                points = listOf(ArequipaLocation) + locations,
+                color = Color.Green,
+                width = 8f,
+                pattern = listOf(Dash(30f), Gap(20f))
+            )
+
         }
     }
 }
