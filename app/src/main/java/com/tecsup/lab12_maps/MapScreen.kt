@@ -20,6 +20,21 @@ import kotlinx.coroutines.delay
 import com.google.android.gms.maps.model.Dash
 import com.google.android.gms.maps.model.Gap
 import com.google.maps.android.compose.Polyline
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 @Composable
 fun MapScreen() {
     val ArequipaLocation = LatLng(-16.4040102, -71.559611) // Arequipa, Perú
@@ -55,7 +70,7 @@ fun MapScreen() {
     }
 
     LaunchedEffect(Unit) {
-        delay(1000)
+        delay(1500)
         val bounds = LatLngBounds.builder().apply {
             (plazaDeArmasPolygon + parqueLambramaniPolygon + mallAventuraPolygon)
                 .forEach { include(it) }
@@ -66,10 +81,19 @@ fun MapScreen() {
         )
     }
 
+    var mapType by remember { mutableStateOf(MapType.NORMAL) }
+    val tipos = listOf(
+        "Normal" to MapType.NORMAL,
+        "Satélite" to MapType.SATELLITE,
+        "Terreno" to MapType.TERRAIN,
+        "Híbrido" to MapType.HYBRID
+    )
+
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
+            cameraPositionState = cameraPositionState,
+            properties = MapProperties(mapType = mapType)
         ) {
             Marker(
                 state = rememberMarkerState(position = ArequipaLocation),
@@ -115,14 +139,31 @@ fun MapScreen() {
                 width = 10f
             )
 
-// Ejemplo 2: ruta punteada entre los puntos de interés
+            // Ejemplo 2: ruta punteada entre los puntos de interés
             Polyline(
                 points = listOf(ArequipaLocation) + locations,
                 color = Color.Green,
                 width = 8f,
                 pattern = listOf(Dash(30f), Gap(20f))
             )
+        }
 
+        // Botones del tipo de mapa: van FUERA del GoogleMap, encima del mapa
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            tipos.forEach { (nombre, tipo) ->
+                FilterChip(
+                    selected = mapType == tipo,
+                    onClick = { mapType = tipo },
+                    label = { Text(nombre) }
+                )
+            }
         }
     }
 }
